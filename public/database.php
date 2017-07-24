@@ -14,14 +14,14 @@ use chillerlan\Database\Options as DBOptions;
 use chillerlan\Database\Connection;
 use chillerlan\Database\Query\Dialects\MySQLQueryBuilder;
 use chillerlan\Session\DBSessionHandler;
-use chillerlan\Session\HandlerOptions;
+use chillerlan\Session\SessionHandlerOptions;
 use Dotenv\Dotenv;
 
 (new Dotenv(__DIR__.'/../config'))->load();
 
 $session = new DBSessionHandler(
 	__DIR__.'/../config/.key',
-	new HandlerOptions([
+	new SessionHandlerOptions([
 		'crypto_key' => __DIR__.'/../config/.key',
 		'db_table'   => 'sessions',
 	]),

@@ -23,7 +23,7 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	protected $started = false;
 
 	/**
-	 * @var \chillerlan\Session\HandlerOptions
+	 * @var \chillerlan\Session\SessionHandlerOptions
 	 */
 	protected $options;
 
@@ -35,12 +35,12 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	/**
 	 * SessionHandlerAbstract constructor.
 	 *
-	 * @param string                             $crypto_key
-	 * @param \chillerlan\Session\HandlerOptions $options
+	 * @param string                                    $crypto_key
+	 * @param \chillerlan\Session\SessionHandlerOptions $options
 	 *
 	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	public function __construct(string $crypto_key, HandlerOptions $options = null){
+	public function __construct(string $crypto_key, SessionHandlerOptions $options = null){
 
 		if(!is_file($crypto_key)){
 			throw new SessionHandlerException('invalid crypto key file');
@@ -101,12 +101,12 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	}
 
 	/**
-	 * @param \chillerlan\Session\HandlerOptions $options
+	 * @param \chillerlan\Session\SessionHandlerOptions $options
 	 *
 	 * @return void
 	 */
-	protected function set_options(HandlerOptions $options = null){
-		$this->options = $options ?: new HandlerOptions;
+	protected function set_options(SessionHandlerOptions $options = null){
+		$this->options = $options ?: new SessionHandlerOptions;
 
 		if(!is_null($this->options->save_path)){
 			$this->options->save_path .=

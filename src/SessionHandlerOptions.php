@@ -1,8 +1,8 @@
 <?php
 /**
- * Class HandlerOptions
+ * Class SessionHandlerOptions
  *
- * @filesource   HandlerOptions.php
+ * @filesource   SessionHandlerOptions.php
  * @created      06.03.2017
  * @package      chillerlan\Session
  * @author       Smiley <smiley@chillerlan.net>
@@ -22,7 +22,7 @@ namespace chillerlan\Session;
  * @property int    $cookie_lifetime
  * @property string $cookie_path
  */
-class HandlerOptions{
+class SessionHandlerOptions{
 
 	protected $filename_prefix = 'SESSION_';
 	protected $session_name    = 'SESSIONID';

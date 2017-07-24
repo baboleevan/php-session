@@ -24,11 +24,11 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	/**
 	 * DBSessionHandler constructor.
 	 *
-	 * @param string                             $crypto_key
-	 * @param \chillerlan\Session\HandlerOptions $options
-	 * @param \chillerlan\Database\Connection    $db
+	 * @param string                                    $crypto_key
+	 * @param \chillerlan\Session\SessionHandlerOptions $options
+	 * @param \chillerlan\Database\Connection           $db
 	 */
-	public function __construct(string $crypto_key, HandlerOptions $options = null, Connection $db){
+	public function __construct(string $crypto_key, SessionHandlerOptions $options = null, Connection $db){
 		parent::__construct($crypto_key, $options);
 
 		$this->db = $db;
