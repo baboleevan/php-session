@@ -15,9 +15,9 @@ use chillerlan\Database\Connection;
 use chillerlan\Database\Query\Dialects\MySQLQueryBuilder;
 use chillerlan\Session\DBSessionHandler;
 use chillerlan\Session\SessionHandlerOptions;
-use Dotenv\Dotenv;
+use chillerlan\Traits\DotEnv;
 
-(new Dotenv(__DIR__.'/../config'))->load();
+$env = (new DotEnv(__DIR__.'/../config'))->load();
 
 $session = new DBSessionHandler(
 	__DIR__.'/../config/.key',
@@ -28,11 +28,11 @@ $session = new DBSessionHandler(
 	new Connection(new DBOptions([
 		'driver'       => MySQLiDriver::class,
 		'querybuilder' => MySQLQueryBuilder::class,
-		'host'         => getenv('DB_HOST'),
-		'port'         => getenv('DB_PORT'),
-		'database'     => getenv('DB_DATABASE'),
-		'username'     => getenv('DB_USERNAME'),
-		'password'     => getenv('DB_PASSWORD'),
+		'host'         => $env->get('DB_HOST'),
+		'port'         => $env->get('DB_PORT'),
+		'database'     => $env->get('DB_DATABASE'),
+		'username'     => $env->get('DB_USERNAME'),
+		'password'     => $env->get('DB_PASSWORD'),
 	]))
 );
 

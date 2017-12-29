@@ -12,6 +12,8 @@
 
 namespace chillerlan\Session;
 
+use chillerlan\Traits\Container;
+
 /**
  * @property string $filename_prefix
  * @property string $session_name
@@ -23,6 +25,7 @@ namespace chillerlan\Session;
  * @property string $cookie_path
  */
 class SessionHandlerOptions{
+	use Container;
 
 	protected $filename_prefix = 'SESSION_';
 	protected $session_name    = 'SESSIONID';
@@ -32,50 +35,5 @@ class SessionHandlerOptions{
 	protected $hash_algo = 'sha512';
 	protected $cookie_lifetime = 60*60*24;
 	protected $cookie_path = '/';
-
-	/**
-	 * Boa constructor.
-	 *
-	 * @param array $properties
-	 */
-	public function __construct(array $properties = []){
-
-		foreach($properties as $key => $value){
-			$this->__set($key, $value);
-		}
-
-	}
-
-	/**
-	 * David Getter
-	 *
-	 * @param string $property
-	 *
-	 * @return mixed
-	 */
-	public function __get(string $property){
-
-		if(property_exists($this, $property)){
-			return $this->{$property};
-		}
-
-		return false;
-	}
-
-	/**
-	 * Jet-setter
-	 *
-	 * @param string $property
-	 * @param mixed  $value
-	 *
-	 * @return void
-	 */
-	public function __set(string $property, $value){
-
-		if(property_exists($this, $property)){
-			$this->{$property} = $value;
-		}
-
-	}
 
 }
