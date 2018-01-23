@@ -1,24 +1,29 @@
 {
 	"name": "chillerlan/php-session",
 	"description": "A simple encrypted session handler. PHP 7+",
-	"homepage": "https://github.com/codemasher/php-session",
+	"homepage": "https://github.com/chillerlan/php-session",
 	"license": "MIT",
 	"type": "library",
+	"minimum-stability": "stable",
 	"authors": [
 		{
 			"name": "Smiley",
-			"email": "smiley@chillerlan.net"
+			"email": "smiley@chillerlan.net",
+			"homepage": "https://github.com/codemasher"
 		}
 	],
+	"support": {
+		"issues": "https://github.com/chillerlan/php-session/issues",
+		"source": "https://github.com/chillerlan/php-session"
+	},
 	"require": {
-		"php": ">=7.0.3",
-		"chillerlan/database": "1.0.*",
-		"chillerlan/php-cache": "1.*",
-		"chillerlan/php-traits": "1.1.*",
-		"defuse/php-encryption": "2.0.*"
+		"php": ">=7.2.0",
+		"chillerlan/php-database": "^1.0",
+		"chillerlan/php-cache": "^1.0",
+		"chillerlan/php-traits": "^1.1"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "6.5.*"
+		"phpunit/phpunit": "^6.5"
 	},
 	"autoload": {
 		"psr-4": {
@@ -29,9 +34,5 @@
 		"psr-4": {
 			"chillerlan\\SessionTest\\": "tests/"
 		}
-	},
-	"scripts": {
-		"post-install-cmd": [
-		]
 	}
 }
