@@ -20,7 +20,6 @@ use chillerlan\Traits\DotEnv;
 $env = (new DotEnv(__DIR__.'/../config'))->load();
 
 $session = new DBSessionHandler(
-	__DIR__.'/../config/.key',
 	new SessionHandlerOptions([
 		'crypto_key' => __DIR__.'/../config/.key',
 		'db_table'   => 'sessions',

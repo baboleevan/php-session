@@ -13,9 +13,9 @@ use chillerlan\Database\Drivers\Native\MySQLiDriver;
 use chillerlan\Database\Options as DBOptions;
 use chillerlan\Database\Connection;
 use chillerlan\Database\Query\Dialects\MySQLQueryBuilder;
-use Dotenv\Dotenv;
+use chillerlan\Traits\DotEnv;
 
-(new Dotenv(__DIR__.'/../config'))->load();
+(new DotEnv(__DIR__.'/../config'))->load();
 
 $db = new Connection(new DBOptions([
 	'driver'       => MySQLiDriver::class,

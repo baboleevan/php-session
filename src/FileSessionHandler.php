@@ -1,8 +1,7 @@
 <?php
 /**
- * Class DBSessionHandler
  *
- * @filesource   DBSessionHandler.php
+ * @filesource   FileSessionHandler.php
  * @created      06.03.2017
  * @package      chillerlan\Session
  * @author       Smiley <smiley@chillerlan.net>
@@ -12,26 +11,29 @@
 
 namespace chillerlan\Session;
 
-use chillerlan\Database\Connection;
+use chillerlan\Filereader\Drivers\FSDriverInterface;
 
-class DBSessionHandler extends SessionHandlerAbstract{
+/**
+ * Class FileSessionHandler
+ */
+class FileSessionHandler extends SessionHandlerAbstract{
 
 	/**
-	 * @var \chillerlan\Database\Connection
+	 * @var \chillerlan\Filereader\Drivers\FSDriverInterface
 	 */
-	protected $db;
+	protected $filereader;
 
 	/**
-	 * DBSessionHandler constructor.
+	 * FileSessionHandler constructor.
 	 *
-	 * @param \chillerlan\Session\SessionHandlerOptions $options
-	 * @param \chillerlan\Database\Connection           $db
+	 * @param \chillerlan\Filereader\Drivers\FSDriverInterface $FSdriver
+	 * @param \chillerlan\Session\SessionHandlerOptions        $options
 	 */
-	public function __construct(SessionHandlerOptions $options = null, Connection $db){
+	public function __construct(FSDriverInterface $FSdriver, SessionHandlerOptions $options = null){
 		parent::__construct($options);
 
-		$this->db = $db;
-		$this->db->connect();
+		// use the internal DiskDriver if no other filereader was given
+		$this->filereader = $FSdriver;
 	}
 
 	/**
@@ -62,11 +64,11 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 * @since 5.4.0
 	 */
 	public function destroy($session_id):bool{
+		$file = $this->options->save_path.$this->options->filename_prefix.$session_id;
 
-		$this->db->delete
-			->from($this->options->db_table)
-			->where('id', $session_id)
-			->execute();
+		if($this->filereader->fileExists($file)) {
+			$this->filereader->deleteFile($file);
+		}
 
 		return true;
 	}
@@ -88,11 +90,19 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 * @since 5.4.0
 	 */
 	public function gc($maxlifetime):bool{
+		$files = $this->filereader->findFiles($this->options->save_path.$this->options->filename_prefix.'*');
 
-		$this->db->delete
-			->from($this->options->db_table)
-			->where('time', time() - $maxlifetime, '<')
-			->execute();
+		if(is_array($files)){
+
+			foreach($files as $file){
+
+				if($this->filereader->fileModifyTime($file) + $maxlifetime < time() && $this->filereader->fileExists($file)){
+					$this->filereader->deleteFile($file);
+				}
+
+			}
+
+		}
 
 		return true;
 	}
@@ -112,6 +122,11 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 * @since 5.4.0
 	 */
 	public function open($save_path, $name):bool{
+
+		if(!$this->filereader->isWritable($save_path)){
+			return false;
+		}
+
 		return true;
 	}
 
@@ -127,29 +142,10 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 * If nothing was read, it must return an empty string.
 	 * Note this value is returned internally to PHP for processing.
 	 * </p>
-	 * @throws \chillerlan\Session\SessionHandlerException
 	 * @since 5.4.0
 	 */
 	public function read($session_id):string{
-
-		$q = $this->db->select
-			->cols(['data'])
-			->from([$this->options->db_table])
-			->where('id', $session_id)
-			->execute();
-
-		try{
-
-			if(!$q || !isset($q[0])){
-				return '';
-			}
-
-			return $this->decrypt($q[0]->data);
-		}
-		catch(\Exception $e){
-			throw new SessionHandlerException($e->getMessage());
-		}
-
+		return $this->filereader->fileContents($this->options->save_path.$this->options->filename_prefix.$session_id);
 	}
 
 	/**
@@ -157,7 +153,7 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 *
 	 * @link  http://php.net/manual/en/sessionhandlerinterface.write.php
 	 *
-	 * @param string $session_id The session id.
+	 * @param string $session_id   The session id.
 	 * @param string $session_data <p>
 	 *                             The encoded session data. This data is the
 	 *                             result of the PHP internally encoding
@@ -173,16 +169,6 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 * @since 5.4.0
 	 */
 	public function write($session_id, $session_data):bool{
-
-		$sql = 'REPLACE INTO `'.$this->options->db_table.'` (`id`, `time`, `data`) VALUES (?,?,?)';
-
-		$q = $this->db->prepared($sql, [
-			$session_id,
-			time(),
-			$this->encrypt($session_data),
-		]);
-
-		return (bool)$q;
+		return $this->filereader->write($this->options->save_path.$this->options->filename_prefix.$session_id, $session_data);
 	}
-
 }

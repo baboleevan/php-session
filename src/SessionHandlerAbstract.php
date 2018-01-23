@@ -12,7 +12,6 @@
 
 namespace chillerlan\Session;
 
-use Defuse\Crypto\{Crypto, Key};
 use SessionHandlerInterface;
 
 abstract class SessionHandlerAbstract implements SessionHandlerInterface, SessionInterface{
@@ -28,26 +27,18 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	protected $options;
 
 	/**
-	 * @var \Defuse\Crypto\Key
+	 * hex key
+	 *
+	 * @var string
 	 */
 	protected $key;
 
 	/**
 	 * SessionHandlerAbstract constructor.
 	 *
-	 * @param string                                    $crypto_key
 	 * @param \chillerlan\Session\SessionHandlerOptions $options
-	 *
-	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	public function __construct(string $crypto_key, SessionHandlerOptions $options = null){
-
-		if(!is_file($crypto_key)){
-			throw new SessionHandlerException('invalid crypto key file');
-		}
-
-		$this->key = Key::loadFromAsciiSafeString(file_get_contents($crypto_key));
-
+	public function __construct(SessionHandlerOptions $options = null){
 		$this->set_options($options);
 
 		session_set_save_handler($this, true);
@@ -86,18 +77,33 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	 * @param string $data
 	 *
 	 * @return string
+	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	protected function encrypt(string $data):string{
-		return Crypto::encrypt($data, $this->key);
+	public function encrypt(string $data):string {
+		$nonce = random_bytes(24);
+
+		if($this->options->use_encryption && function_exists('sodium_crypto_secretbox')){
+			return sodium_bin2hex($nonce.sodium_crypto_secretbox($data, $nonce, sodium_hex2bin($this->key)));
+		}
+
+		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
 	}
 
 	/**
-	 * @param string $encrypted_data
+	 * @param string $box
 	 *
 	 * @return string
+	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	protected function decrypt(string $encrypted_data):string{
-		return Crypto::decrypt($encrypted_data, $this->key);
+	public function decrypt(string $box):string {
+
+		if($this->options->use_encryption && function_exists('sodium_crypto_secretbox_open')){
+			$box = sodium_hex2bin($box);
+
+			return sodium_crypto_secretbox_open(substr($box, 24), substr($box, 0, 24), sodium_hex2bin($this->key));
+		}
+
+		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
 	}
 
 	/**
@@ -106,7 +112,7 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	 * @return void
 	 */
 	protected function set_options(SessionHandlerOptions $options = null){
-		$this->options = $options ?: new SessionHandlerOptions;
+		$this->options = $options ?? new SessionHandlerOptions;
 
 		if(!is_null($this->options->save_path)){
 			$this->options->save_path .=
@@ -116,7 +122,6 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 
 			ini_set('session.save_path', $this->options->save_path);
 		}
-
 
 		// @todo http://php.net/manual/session.configuration.php
 		ini_set('session.name', $this->options->session_name);
