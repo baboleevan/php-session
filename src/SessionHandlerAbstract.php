@@ -142,26 +142,26 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 		ini_set('session.name', $this->options->session_name);
 
 		ini_set('session.gc_maxlifetime', $this->options->gc_maxlifetime);
-		ini_set('session.gc_probability', 1);
-		ini_set('session.gc_divisor', 100);
+		ini_set('session.gc_probability', '1');
+		ini_set('session.gc_divisor', '100');
 
-		ini_set('session.use_strict_mode', true);
-		ini_set('session.use_only_cookies', true);
-		ini_set('session.cookie_secure', false); // @todo
-		ini_set('session.cookie_httponly', true);
-		ini_set('session.cookie_lifetime', 0);
+		ini_set('session.use_strict_mode', 'true');
+		ini_set('session.use_only_cookies', 'true');
+		ini_set('session.cookie_secure', 'false'); // @todo
+		ini_set('session.cookie_httponly', 'true');
+		ini_set('session.cookie_lifetime', '0');
 #		ini_set('session.referer_check', '');
 
 		if(PHP_VERSION_ID < 70100){
-			ini_set('session.hash_bits_per_character', 6);
+			ini_set('session.hash_bits_per_character', '6');
 
 			if(in_array($this->options->hash_algo, hash_algos())){
 				ini_set('session.hash_function', $this->options->hash_algo);
 			}
 		}
 		else{
-			ini_set('session.sid_bits_per_character', 6);
-			ini_set('session.sid_length', 128);
+			ini_set('session.sid_bits_per_character', '6');
+			ini_set('session.sid_length', '128');
 		}
 
 	}
