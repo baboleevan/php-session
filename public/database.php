@@ -9,32 +9,35 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use chillerlan\Database\Drivers\Native\MySQLiDriver;
-use chillerlan\Database\Options as DBOptions;
-use chillerlan\Database\Connection;
-use chillerlan\Database\Query\Dialects\MySQLQueryBuilder;
+use chillerlan\Database\Database;
+use chillerlan\Database\DatabaseOptionsTrait;
+use chillerlan\Database\Drivers\MySQLiDrv;
 use chillerlan\Session\DBSessionHandler;
-use chillerlan\Session\SessionHandlerOptions;
+use chillerlan\Session\SessionHandlerOptionsTrait;
+use chillerlan\Traits\ContainerAbstract;
 use chillerlan\Traits\DotEnv;
 
-$env = (new DotEnv(__DIR__.'/../config'))->load();
+$env = (new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 
-$session = new DBSessionHandler(
-	new SessionHandlerOptions([
-		'crypto_key' => __DIR__.'/../config/.key',
-		'db_table'   => 'sessions',
-	]),
-	new Connection(new DBOptions([
-		'driver'       => MySQLiDriver::class,
-		'querybuilder' => MySQLQueryBuilder::class,
-		'host'         => $env->get('DB_HOST'),
-		'port'         => $env->get('DB_PORT'),
-		'database'     => $env->get('DB_DATABASE'),
-		'username'     => $env->get('DB_USERNAME'),
-		'password'     => $env->get('DB_PASSWORD'),
-	]))
-);
+$options = [
+	// SessionHandlerOptions
+	'db_table'         => 'sessions',
+	'sessionCryptoKey' => '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
+	// DatabaseOptions
+	'driver'       => MySQLiDrv::class,
+	'host'     => $env->get('DB_HOST'),
+	'port'     => $env->get('DB_PORT'),
+	'database' => $env->get('DB_DATABASE'),
+	'username' => $env->get('DB_USERNAME'),
+	'password' => $env->get('DB_PASSWORD'),
+];
 
+
+$options = new class($options) extends ContainerAbstract{
+	use DatabaseOptionsTrait, SessionHandlerOptionsTrait;
+};
+
+$session = new DBSessionHandler($options, new Database($options));
 
 $session->start();
 
