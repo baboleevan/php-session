@@ -12,7 +12,7 @@
 
 namespace chillerlan\Session;
 
-use chillerlan\Traits\{Container, ContainerInterface};
+use chillerlan\Traits\ContainerAbstract;
 
 /**
  * @property string $filename_prefix
@@ -23,20 +23,9 @@ use chillerlan\Traits\{Container, ContainerInterface};
  * @property string $hash_algo
  * @property int    $cookie_lifetime
  * @property string $cookie_path
- * @property string $use_encryption
- * @property string $cryptoKey
+ * @property bool   $use_encryption
+ * @property string $sessionCryptoKey
  */
-class SessionHandlerOptions implements ContainerInterface{
-	use Container;
-
-	protected $filename_prefix = 'SESSION_';
-	protected $session_name    = 'SESSIONID';
-	protected $save_path;
-	protected $db_table;
-	protected $gc_maxlifetime = 3600;
-	protected $hash_algo = 'sha512';
-	protected $cookie_lifetime = 60*60*24;
-	protected $cookie_path = '/';
-	protected $use_encryption = true;
-	protected $cryptoKey;
+class SessionHandlerOptions extends ContainerAbstract{
+	use SessionHandlerOptionsTrait;
 }

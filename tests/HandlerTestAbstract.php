@@ -12,7 +12,12 @@
 
 namespace chillerlan\SessionTest;
 
+use chillerlan\Database\DatabaseOptionsTrait;
+use chillerlan\Database\Drivers\MySQLiDrv;
+use chillerlan\Session\SessionHandlerOptionsTrait;
 use chillerlan\Session\SessionInterface;
+use chillerlan\Traits\ContainerAbstract;
+use chillerlan\Traits\DotEnv;
 use PHPUnit\Framework\TestCase;
 use SessionHandlerInterface;
 
@@ -23,6 +28,33 @@ abstract class HandlerTestAbstract extends TestCase{
 	 */
 	protected $session;
 
+	/**
+	 * @var \chillerlan\Traits\ContainerInterface
+	 */
+	protected $options;
+
+	protected function setUp(){
+		$env = (new DotEnv(__DIR__.'/../config'))->load();
+
+		$options = [
+			// SessionHandlerOptions
+			'db_table'         => 'sessions',
+			'sessionCryptoKey' => '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
+			// DatabaseOptions
+			'driver'       => MySQLiDrv::class,
+			'host'     => $env->get('DB_HOST'),
+			'port'     => $env->get('DB_PORT'),
+			'database' => $env->get('DB_DATABASE'),
+			'username' => $env->get('DB_USERNAME'),
+			'password' => $env->get('DB_PASSWORD'),
+		];
+
+
+		$this->options = new class($options) extends ContainerAbstract{
+			use DatabaseOptionsTrait, SessionHandlerOptionsTrait;
+		};
+
+	}
 	/**
 	 * @runInSeparateProcess
 	 */

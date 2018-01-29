@@ -12,9 +12,13 @@
 
 namespace chillerlan\Session;
 
+use chillerlan\Logger\LogTrait;
+use chillerlan\Traits\ContainerInterface;
+use Psr\Log\LoggerAwareInterface;
 use SessionHandlerInterface;
 
-abstract class SessionHandlerAbstract implements SessionHandlerInterface, SessionInterface{
+abstract class SessionHandlerAbstract implements SessionHandlerInterface, SessionInterface, LoggerAwareInterface{
+	use LogTrait;
 
 	/**
 	 * @var bool
@@ -27,27 +31,19 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	protected $options;
 
 	/**
-	 * hex key
-	 *
-	 * @var string
-	 */
-	protected $key;
-
-	/**
 	 * SessionHandlerAbstract constructor.
 	 *
-	 * @param \chillerlan\Session\SessionHandlerOptions $options
+	 * @param \chillerlan\Traits\ContainerInterface $options
 	 */
-	public function __construct(SessionHandlerOptions $options = null){
-		$this->set_options($options);
+	public function __construct(ContainerInterface $options = null){
+		$this->options = $options ?? new SessionHandlerOptions;
+		$this->set_session_options();
 
 		session_set_save_handler($this, true);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function start(){
+	/** @inheritdoc */
+	public function start():SessionInterface{
 		$cookie_params = session_get_cookie_params();
 
 		session_start();
@@ -60,17 +56,43 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 			$this->options->cookie_path,
 			$cookie_params['domain']
 		);
+
+		return $this;
 	}
 
-	/**
-	 * @return void
-	 */
-	public function end(){
+	/** @inheritdoc */
+	public function end():SessionInterface{
 		session_regenerate_id(true);
 		setcookie(session_name(), '', 0, $this->options->cookie_path);
 		session_unset();
 		session_destroy();
 		session_write_close();
+
+		return $this;
+	}
+
+	/** @inheritdoc */
+	public function get(string $name){
+		return $_SESSION[$name] ?? null;
+	}
+
+	/** @inheritdoc */
+	public function set(string $name, $value):SessionInterface{
+		$_SESSION[$name] = $value;
+
+		return $this;
+	}
+
+	/** @inheritdoc */
+	public function unset(string $name):SessionInterface{
+		unset($_SESSION[$name]);
+
+		return $this;
+	}
+
+	/** @inheritdoc */
+	public function isset(string $name):bool{
+		return isset($_SESSION[$name]);
 	}
 
 	/**
@@ -79,11 +101,14 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	 * @return string
 	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	public function encrypt(string $data):string {
-		$nonce = random_bytes(24);
+	protected function encrypt(string &$data):string {
 
-		if($this->options->use_encryption && function_exists('sodium_crypto_secretbox')){
-			return sodium_bin2hex($nonce.sodium_crypto_secretbox($data, $nonce, sodium_hex2bin($this->key)));
+		if(function_exists('sodium_crypto_secretbox')){
+			$box = sodium_crypto_secretbox($data, $this::SESSION_NONCE, sodium_hex2bin($this->options->sessionCryptoKey));
+
+			sodium_memzero($data);
+
+			return sodium_bin2hex($box);
 		}
 
 		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
@@ -95,31 +120,21 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	 * @return string
 	 * @throws \chillerlan\Session\SessionHandlerException
 	 */
-	public function decrypt(string $box):string {
+	protected function decrypt(string $box):string {
 
-		if($this->options->use_encryption && function_exists('sodium_crypto_secretbox_open')){
-			$box = sodium_hex2bin($box);
-
-			return sodium_crypto_secretbox_open(substr($box, 24), substr($box, 0, 24), sodium_hex2bin($this->key));
+		if(function_exists('sodium_crypto_secretbox_open')){
+			return sodium_crypto_secretbox_open(sodium_hex2bin($box), $this::SESSION_NONCE, sodium_hex2bin($this->options->sessionCryptoKey));
 		}
 
 		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
 	}
 
 	/**
-	 * @param \chillerlan\Session\SessionHandlerOptions $options
-	 *
 	 * @return void
 	 */
-	protected function set_options(SessionHandlerOptions $options = null){
-		$this->options = $options ?? new SessionHandlerOptions;
+	protected function set_session_options(){
 
-		if(!is_null($this->options->save_path)){
-			$this->options->save_path .=
-				!in_array(substr($this->options->save_path, -1), ['/', '\\'])
-					? DIRECTORY_SEPARATOR
-					: '';
-
+		if(is_writable($this->options->save_path)){
 			ini_set('session.save_path', $this->options->save_path);
 		}
 
@@ -132,7 +147,7 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 
 		ini_set('session.use_strict_mode', true);
 		ini_set('session.use_only_cookies', true);
-		ini_set('session.cookie_secure', false);
+		ini_set('session.cookie_secure', false); // @todo
 		ini_set('session.cookie_httponly', true);
 		ini_set('session.cookie_lifetime', 0);
 #		ini_set('session.referer_check', '');

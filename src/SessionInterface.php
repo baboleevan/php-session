@@ -14,14 +14,45 @@ namespace chillerlan\Session;
 
 interface SessionInterface{
 
-	/**
-	 * @return void
-	 */
-	public function start();
+	const SESSION_NONCE = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02";
 
 	/**
-	 * @return void
+	 * @return \chillerlan\Session\SessionInterface
 	 */
-	public function end();
+	public function start():SessionInterface;
+
+	/**
+	 * @return \chillerlan\Session\SessionInterface
+	 */
+	public function end():SessionInterface;
+
+	/**
+	 * @param string $name
+	 *
+	 * @return mixed
+	 */
+	public function get(string $name);
+
+	/**
+	 * @param string $name
+	 * @param        $value
+	 *
+	 * @return \chillerlan\Session\SessionInterface
+	 */
+	public function set(string $name, $value):SessionInterface;
+
+	/**
+	 * @param string $name
+	 *
+	 * @return \chillerlan\Session\SessionInterface
+	 */
+	public function unset(string $name):SessionInterface;
+
+	/**
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function isset(string $name):bool;
 
 }

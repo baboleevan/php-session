@@ -9,17 +9,15 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use chillerlan\Database\Drivers\Native\MySQLiDriver;
-use chillerlan\Database\Options as DBOptions;
-use chillerlan\Database\Connection;
-use chillerlan\Database\Query\Dialects\MySQLQueryBuilder;
+use chillerlan\Database\Drivers\MySQLiDrv;
+use chillerlan\Database\DatabaseOptions;
+use chillerlan\Database\Database;
 use chillerlan\Traits\DotEnv;
 
 (new DotEnv(__DIR__.'/../config'))->load();
 
-$db = new Connection(new DBOptions([
-	'driver'       => MySQLiDriver::class,
-	'querybuilder' => MySQLQueryBuilder::class,
+$db = new Database(new DatabaseOptions([
+	'driver'       => MySQLiDrv::class,
 	'host'     => getenv('DB_HOST'),
 	'port'     => getenv('DB_PORT'),
 	'database' => getenv('DB_DATABASE'),
@@ -35,4 +33,6 @@ $db->create
 	->varchar('id', 128, null, false)
 	->int('time', 10, null, true, 'UNSIGNED')
 	->text('data')
-	->execute();
+	->query();
+
+exit(true);

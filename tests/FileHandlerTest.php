@@ -12,13 +12,13 @@
 
 namespace chillerlan\SessionTest;
 
-use chillerlan\Session\FileSessionHandler;
 use chillerlan\Filereader\Drivers\DiskDriver;
+use chillerlan\Session\FileSessionHandler;
 
 class FileHandlerTest extends HandlerTestAbstract{
 
 	protected function setUp(){
-		$this->session = new FileSessionHandler(new DiskDriver);
+		$this->session = new FileSessionHandler($this->options, new DiskDriver);
 	}
 
 }

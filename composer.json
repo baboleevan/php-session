@@ -4,7 +4,7 @@
 	"homepage": "https://github.com/chillerlan/php-session",
 	"license": "MIT",
 	"type": "library",
-	"minimum-stability": "stable",
+	"minimum-stability": "dev",
 	"authors": [
 		{
 			"name": "Smiley",
@@ -17,14 +17,16 @@
 		"source": "https://github.com/chillerlan/php-session"
 	},
 	"require": {
-		"php": ">=7.2.0",
-		"chillerlan/php-database": "^1.0",
-		"chillerlan/php-cache": "^1.0",
+		"php": "^7.2.0",
 		"chillerlan/php-traits": "^1.1",
-		"chillerlan/php-filereader": "^1.0"
+		"psr/log": "^1.0",
+		"chillerlan/php-log": "^1.0"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^6.5"
+		"phpunit/phpunit": "^6.5",
+		"chillerlan/php-cache": "^1.0",
+		"chillerlan/php-database": "^2.0.1",
+		"chillerlan/php-filereader": "^1.0"
 	},
 	"autoload": {
 		"psr-4": {
