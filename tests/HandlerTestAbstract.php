@@ -34,7 +34,7 @@ abstract class HandlerTestAbstract extends TestCase{
 	protected $options;
 
 	protected function setUp(){
-		$env = (new DotEnv(__DIR__.'/../config'))->load();
+		$env = (new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 
 		$options = [
 			// SessionHandlerOptions

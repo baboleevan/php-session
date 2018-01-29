@@ -14,7 +14,7 @@ use chillerlan\Database\DatabaseOptions;
 use chillerlan\Database\Database;
 use chillerlan\Traits\DotEnv;
 
-(new DotEnv(__DIR__.'/../config'))->load();
+(new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 
 $db = new Database(new DatabaseOptions([
 	'driver'       => MySQLiDrv::class,
