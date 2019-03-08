@@ -12,10 +12,9 @@ require_once __DIR__.'/../vendor/autoload.php';
 use chillerlan\Database\Database;
 use chillerlan\Database\DatabaseOptionsTrait;
 use chillerlan\Database\Drivers\MySQLiDrv;
+use chillerlan\DotEnv\DotEnv;
 use chillerlan\Session\DBSessionHandler;
 use chillerlan\Session\SessionHandlerOptionsTrait;
-use chillerlan\Traits\ContainerAbstract;
-use chillerlan\Traits\DotEnv;
 
 $env = (new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 
@@ -32,12 +31,11 @@ $options = [
 	'password' => $env->get('DB_PASSWORD'),
 ];
 
-
-$options = new class($options) extends ContainerAbstract{
+$options = new class($options) extends \chillerlan\Settings\SettingsContainerAbstract{
 	use DatabaseOptionsTrait, SessionHandlerOptionsTrait;
 };
 
-$session = new DBSessionHandler($options, new Database($options));
+$session = new DBSessionHandler(new Database($options), $options);
 
 $session->start();
 

@@ -14,10 +14,10 @@ namespace chillerlan\SessionTest;
 
 use chillerlan\Database\DatabaseOptionsTrait;
 use chillerlan\Database\Drivers\MySQLiDrv;
+use chillerlan\DotEnv\DotEnv;
 use chillerlan\Session\SessionHandlerOptionsTrait;
 use chillerlan\Session\SessionInterface;
-use chillerlan\Traits\ContainerAbstract;
-use chillerlan\Traits\DotEnv;
+use chillerlan\Settings\SettingsContainerAbstract;
 use PHPUnit\Framework\TestCase;
 use SessionHandlerInterface;
 
@@ -29,11 +29,11 @@ abstract class HandlerTestAbstract extends TestCase{
 	protected $session;
 
 	/**
-	 * @var \chillerlan\Traits\ContainerInterface
+	 * @var \chillerlan\Settings\SettingsContainerInterface
 	 */
 	protected $options;
 
-	protected function setUp(){
+	protected function setUp():void{
 		$env = (new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 
 		$options = [
@@ -50,7 +50,7 @@ abstract class HandlerTestAbstract extends TestCase{
 		];
 
 
-		$this->options = new class($options) extends ContainerAbstract{
+		$this->options = new class($options) extends SettingsContainerAbstract{
 			use DatabaseOptionsTrait, SessionHandlerOptionsTrait;
 		};
 

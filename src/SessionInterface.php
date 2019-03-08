@@ -12,7 +12,9 @@
 
 namespace chillerlan\Session;
 
-interface SessionInterface{
+use SessionHandlerInterface;
+
+interface SessionInterface extends SessionHandlerInterface{
 
 	const SESSION_NONCE = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02";
 
@@ -25,6 +27,11 @@ interface SessionInterface{
 	 * @return \chillerlan\Session\SessionInterface
 	 */
 	public function end():SessionInterface;
+
+	/**
+	 * @return bool
+	 */
+	public function active():bool;
 
 	/**
 	 * @param string $name

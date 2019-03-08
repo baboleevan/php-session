@@ -12,13 +12,12 @@
 
 namespace chillerlan\Session;
 
-use chillerlan\Logger\LogTrait;
-use chillerlan\Traits\ContainerInterface;
-use Psr\Log\LoggerAwareInterface;
-use SessionHandlerInterface;
+use chillerlan\Logger\Output\NullLogger;
+use chillerlan\Settings\SettingsContainerInterface;
+use Psr\Log\{LoggerAwareInterface, LoggerAwareTrait, LoggerInterface};
 
-abstract class SessionHandlerAbstract implements SessionHandlerInterface, SessionInterface, LoggerAwareInterface{
-	use LogTrait;
+abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareInterface{
+	use LoggerAwareTrait;
 
 	/**
 	 * @var bool
@@ -33,11 +32,14 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	/**
 	 * SessionHandlerAbstract constructor.
 	 *
-	 * @param \chillerlan\Traits\ContainerInterface $options
+	 * @param \chillerlan\Settings\SettingsContainerInterface $options
+	 * @param \Psr\Log\LoggerInterface|null                  $logger
 	 */
-	public function __construct(ContainerInterface $options = null){
+	public function __construct(SettingsContainerInterface $options = null, LoggerInterface $logger = null){
 		$this->options = $options ?? new SessionHandlerOptions;
-		$this->set_session_options();
+		$this->logger  = $logger ?? new NullLogger;
+
+		$this->setOptions($options);
 
 		session_set_save_handler($this, true);
 	}
@@ -69,6 +71,11 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 		session_write_close();
 
 		return $this;
+	}
+
+	/** @inheritdoc */
+	public function active():bool{
+		return session_status() === PHP_SESSION_ACTIVE;
 	}
 
 	/** @inheritdoc */
@@ -130,18 +137,25 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 	}
 
 	/**
-	 * @return void
+	 * @param \chillerlan\Settings\SettingsContainerInterface $options
+	 *
+	 * @return \chillerlan\Session\SessionInterface
 	 */
-	protected function set_session_options(){
+	public function setOptions(SettingsContainerInterface $options):SessionInterface{
 
-		if(is_writable($this->options->save_path)){
-			ini_set('session.save_path', $this->options->save_path);
+		// end an active session before setting new options
+		if($this->active()){
+			$this->end();
+		}
+
+		if(is_writable($options->save_path)){
+			ini_set('session.save_path', $options->save_path);
 		}
 
 		// @todo http://php.net/manual/session.configuration.php
-		ini_set('session.name', $this->options->session_name);
+		ini_set('session.name', $options->session_name);
 
-		ini_set('session.gc_maxlifetime', $this->options->gc_maxlifetime);
+		ini_set('session.gc_maxlifetime', $options->gc_maxlifetime);
 		ini_set('session.gc_probability', '1');
 		ini_set('session.gc_divisor', '100');
 
@@ -152,18 +166,10 @@ abstract class SessionHandlerAbstract implements SessionHandlerInterface, Sessio
 		ini_set('session.cookie_lifetime', '0');
 #		ini_set('session.referer_check', '');
 
-		if(PHP_VERSION_ID < 70100){
-			ini_set('session.hash_bits_per_character', '6');
+		ini_set('session.sid_bits_per_character', '6');
+		ini_set('session.sid_length', '128');
 
-			if(in_array($this->options->hash_algo, hash_algos())){
-				ini_set('session.hash_function', $this->options->hash_algo);
-			}
-		}
-		else{
-			ini_set('session.sid_bits_per_character', '6');
-			ini_set('session.sid_length', '128');
-		}
-
+		return $this;
 	}
 
 }

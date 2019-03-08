@@ -17,10 +17,10 @@ use chillerlan\Session\DBSessionHandler;
 
 class DatabaseHandlerTest extends HandlerTestAbstract{
 
-	protected function setUp(){
+	protected function setUp():void{
 		parent::setUp();
 
-		$this->session = new DBSessionHandler($this->options, new Database($this->options));
+		$this->session = new DBSessionHandler(new Database($this->options), $this->options);
 	}
 
 }

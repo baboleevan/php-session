@@ -9,10 +9,8 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use chillerlan\Database\Drivers\MySQLiDrv;
-use chillerlan\Database\DatabaseOptions;
-use chillerlan\Database\Database;
-use chillerlan\Traits\DotEnv;
+use chillerlan\Database\{Database, DatabaseOptions, Drivers\MySQLiDrv};
+use chillerlan\DotEnv\DotEnv;
 
 (new DotEnv(__DIR__.'/../config', file_exists(__DIR__.'/../config/.env') ? '.env' : '.env_travis'))->load();
 

@@ -22,7 +22,7 @@ trait SessionHandlerOptionsTrait{
 	protected $hash_algo = 'sha512';
 	protected $cookie_lifetime = 60*60*24;
 	protected $cookie_path = '/';
-	protected $use_encryption = false;
+	protected $use_encryption = true;
 	protected $sessionCryptoKey;
 
 }

@@ -12,7 +12,7 @@
 
 namespace chillerlan\Session;
 
-use chillerlan\Traits\ContainerAbstract;
+use chillerlan\Settings\SettingsContainerAbstract;
 
 /**
  * @property string $filename_prefix
@@ -26,6 +26,6 @@ use chillerlan\Traits\ContainerAbstract;
  * @property bool   $use_encryption
  * @property string $sessionCryptoKey
  */
-class SessionHandlerOptions extends ContainerAbstract{
+class SessionHandlerOptions extends SettingsContainerAbstract{
 	use SessionHandlerOptionsTrait;
 }

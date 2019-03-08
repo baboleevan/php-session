@@ -13,7 +13,8 @@
 namespace chillerlan\Session;
 
 use chillerlan\Database\Database;
-use chillerlan\Traits\ContainerInterface;
+use chillerlan\Settings\SettingsContainerInterface;
+use Psr\Log\LoggerInterface;
 
 class DBSessionHandler extends SessionHandlerAbstract{
 
@@ -25,11 +26,12 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	/**
 	 * DBSessionHandler constructor.
 	 *
-	 * @param \chillerlan\Traits\ContainerInterface $options
-	 * @param \chillerlan\Database\Database         $db
+	 * @param \chillerlan\Database\Database                  $db
+	 * @param \chillerlan\Settings\SettingsContainerInterface $options
+	 * @param \Psr\Log\LoggerInterface|null                  $logger
 	 */
-	public function __construct(ContainerInterface $options = null, Database $db){
-		parent::__construct($options);
+	public function __construct(Database $db, SettingsContainerInterface $options = null, LoggerInterface $logger = null){
+		parent::__construct($options, $logger);
 
 		$this->db = $db->connect();
 	}
@@ -66,7 +68,12 @@ class DBSessionHandler extends SessionHandlerAbstract{
 		return true;
 	}
 
-	/** @inheritdoc */
+	/**
+	 * @param string $session_id
+	 *
+	 * @return string
+	 * @throws \chillerlan\Session\SessionHandlerException
+	 */
 	public function read($session_id):string{
 
 		$q = $this->db->select
