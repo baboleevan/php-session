@@ -64,11 +64,14 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 
 	/** @inheritdoc */
 	public function end():SessionInterface{
-		session_regenerate_id(true);
-		setcookie(session_name(), '', 0, $this->options->cookie_path);
-		session_unset();
-		session_destroy();
-		session_write_close();
+
+		if(session_status() === PHP_SESSION_ACTIVE){
+			session_regenerate_id(true);
+			setcookie(session_name(), '', 0, $this->options->cookie_path);
+			session_unset();
+			session_destroy();
+			session_write_close();
+		}
 
 		return $this;
 	}
