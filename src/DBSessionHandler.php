@@ -76,6 +76,10 @@ class DBSessionHandler extends SessionHandlerAbstract{
 	 */
 	public function read($session_id):string{
 
+		if(empty($session_id)){
+			throw new SessionHandlerException('invalid session id');
+		}
+
 		$q = $this->db->select
 			->cols(['data'])
 			->from([$this->options->db_table])
@@ -96,8 +100,15 @@ class DBSessionHandler extends SessionHandlerAbstract{
 
 	}
 
-	/** @inheritdoc */
+	/**
+	 * @inheritdoc
+	 * @throws \chillerlan\Session\SessionHandlerException
+	 */
 	public function write($session_id, $session_data):bool{
+
+		if(empty($session_id)){
+			throw new SessionHandlerException('invalid session id');
+		}
 
 		$q = $this->db->insert
 			->into($this->options->db_table, 'REPLACE', 'id')
