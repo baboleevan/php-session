@@ -41,20 +41,28 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 
 		$this->setOptions($options);
 
-		session_set_save_handler($this, true);
+		\session_set_save_handler($this, true);
 	}
 
-	/** @inheritdoc */
+	/**
+	 * @inheritdoc
+	 * @throws \chillerlan\Session\SessionHandlerException
+	 */
 	public function start():SessionInterface{
-		$cookie_params = session_get_cookie_params();
 
-		session_start();
-		session_regenerate_id(true);
+		if($this->active()){
+			throw new SessionHandlerException('session already running');
+		}
 
-		setcookie(
-			session_name(),
-			session_id(),
-			time()+$this->options->cookie_lifetime,
+		$cookie_params = \session_get_cookie_params();
+
+		\session_start();
+		\session_regenerate_id(true);
+
+		\setcookie(
+			\session_name(),
+			\session_id(),
+			\time() + $this->options->cookie_lifetime,
 			$this->options->cookie_path,
 			$cookie_params['domain']
 		);
@@ -65,12 +73,12 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 	/** @inheritdoc */
 	public function end():SessionInterface{
 
-		if(session_status() === PHP_SESSION_ACTIVE){
-			session_regenerate_id(true);
-			setcookie(session_name(), '', 0, $this->options->cookie_path);
-			session_unset();
-			session_destroy();
-			session_write_close();
+		if($this->active()){
+			\session_regenerate_id(true);
+			\setcookie(session_name(), '', 0, $this->options->cookie_path);
+			\session_unset();
+			\session_destroy();
+			\session_write_close();
 		}
 
 		return $this;
@@ -78,7 +86,7 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 
 	/** @inheritdoc */
 	public function active():bool{
-		return session_status() === PHP_SESSION_ACTIVE;
+		return \session_status() === \PHP_SESSION_ACTIVE;
 	}
 
 	/** @inheritdoc */
@@ -113,12 +121,12 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 	 */
 	protected function encrypt(string &$data):string {
 
-		if(function_exists('sodium_crypto_secretbox')){
-			$box = sodium_crypto_secretbox($data, $this::SESSION_NONCE, sodium_hex2bin($this->options->sessionCryptoKey));
+		if(\function_exists('sodium_crypto_secretbox')){
+			$box = \sodium_crypto_secretbox($data, $this::SESSION_NONCE, \sodium_hex2bin($this->options->sessionCryptoKey));
 
-			sodium_memzero($data);
+			\sodium_memzero($data);
 
-			return sodium_bin2hex($box);
+			return \sodium_bin2hex($box);
 		}
 
 		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
@@ -132,8 +140,8 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 	 */
 	protected function decrypt(string $box):string {
 
-		if(function_exists('sodium_crypto_secretbox_open')){
-			return sodium_crypto_secretbox_open(sodium_hex2bin($box), $this::SESSION_NONCE, sodium_hex2bin($this->options->sessionCryptoKey));
+		if(\function_exists('sodium_crypto_secretbox_open')){
+			return \sodium_crypto_secretbox_open(\sodium_hex2bin($box), $this::SESSION_NONCE, \sodium_hex2bin($this->options->sessionCryptoKey));
 		}
 
 		throw new SessionHandlerException('sodium not installed'); // @codeCoverageIgnore
@@ -151,26 +159,26 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 			$this->end();
 		}
 
-		if(is_writable($options->save_path)){
-			ini_set('session.save_path', $options->save_path);
+		if(\is_writable($options->save_path)){
+			\ini_set('session.save_path', $options->save_path);
 		}
 
 		// @todo http://php.net/manual/session.configuration.php
-		ini_set('session.name', $options->session_name);
+		\ini_set('session.name', $options->session_name);
 
-		ini_set('session.gc_maxlifetime', $options->gc_maxlifetime);
-		ini_set('session.gc_probability', '1');
-		ini_set('session.gc_divisor', '100');
+		\ini_set('session.gc_maxlifetime', $options->gc_maxlifetime);
+		\ini_set('session.gc_probability', '1');
+		\ini_set('session.gc_divisor', '100');
 
-		ini_set('session.use_strict_mode', 'true');
-		ini_set('session.use_only_cookies', 'true');
-		ini_set('session.cookie_secure', 'false'); // @todo
-		ini_set('session.cookie_httponly', 'true');
-		ini_set('session.cookie_lifetime', '0');
-#		ini_set('session.referer_check', '');
+		\ini_set('session.use_strict_mode', 'true');
+		\ini_set('session.use_only_cookies', 'true');
+		\ini_set('session.cookie_secure', 'false'); // @todo
+		\ini_set('session.cookie_httponly', 'true');
+		\ini_set('session.cookie_lifetime', '0');
+#		\ini_set('session.referer_check', '');
 
-		ini_set('session.sid_bits_per_character', '6');
-		ini_set('session.sid_length', '128');
+		\ini_set('session.sid_bits_per_character', '6');
+		\ini_set('session.sid_length', '128');
 
 		return $this;
 	}
