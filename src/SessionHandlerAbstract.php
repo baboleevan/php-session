@@ -75,7 +75,7 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 
 		if($this->active()){
 			\session_regenerate_id(true);
-			\setcookie(session_name(), '', 0, $this->options->cookie_path);
+			\setcookie(\session_name(), '', 0, $this->options->cookie_path);
 			\session_unset();
 			\session_destroy();
 			\session_write_close();
@@ -115,7 +115,7 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 
 	/** @inheritdoc */
 	public function id(string $newID = null):string{
-		return session_id($newID);
+		return \session_id($newID);
 	}
 
 	/**
