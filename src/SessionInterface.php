@@ -62,4 +62,10 @@ interface SessionInterface extends SessionHandlerInterface{
 	 */
 	public function isset(string $name):bool;
 
+	/**
+	 * @param string|null $newID
+	 *
+	 * @return string
+	 */
+	public function id(string $newID = null):string;
 }

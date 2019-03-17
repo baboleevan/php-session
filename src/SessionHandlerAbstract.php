@@ -113,6 +113,11 @@ abstract class SessionHandlerAbstract implements SessionInterface, LoggerAwareIn
 		return isset($_SESSION[$name]);
 	}
 
+	/** @inheritdoc */
+	public function id(string $newID = null):string{
+		return session_id($newID);
+	}
+
 	/**
 	 * @param string $data
 	 *
