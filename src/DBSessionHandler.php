@@ -57,7 +57,7 @@ class DBSessionHandler extends SessionHandlerAbstract{
 
 		$this->db->delete
 			->from($this->options->db_table)
-			->where('time', time() - $maxlifetime, '<')
+			->where('time', \time() - $maxlifetime, '<')
 			->query();
 
 		return true;
@@ -103,7 +103,7 @@ class DBSessionHandler extends SessionHandlerAbstract{
 			->into($this->options->db_table, 'REPLACE', 'id')
 			->values([
 				'id'   => $session_id,
-				'time' => time(),
+				'time' => \time(),
 				'data' => $this->options->use_encryption ? $this->encrypt($session_data) : $session_data,
 			])
 			->query();
